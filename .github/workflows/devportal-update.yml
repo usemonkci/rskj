@@ -4,11 +4,7 @@ env:
   DEV_PORTAL_SCRIPT_PATH: ".github/workflows/scripts/devportal-update"
 
 on:
-  push:
-    paths:
-      - "docs/**"
-    branches:
-      - master
+  workflow_dispatch:
 
 permissions: read-all
 

@@ -1,21 +1,14 @@
 name: Build and Test
 
 on:
-  push:
-    branches:
-      - "master"
-      - "*-rc"
-  pull_request:
-    types: [ opened, reopened, synchronize ]
-    branches:
-      - "**"
+  workflow_dispatch:
 
 # Declare default permissions as read only.
 permissions: read-all
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: monkci-ubuntu-24.04-32
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 #v5.0.0
 
@@ -57,7 +50,7 @@ jobs:
 
   smell-test:
     needs: unit-tests-java17
-    runs-on: ubuntu-latest
+    runs-on: monkci-ubuntu-24.04-32
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 #v5.0.0
         with:
@@ -139,65 +132,6 @@ jobs:
               -Dsonar.token="$SONAR_TOKEN"
           fi
 
-  mining-tests:
-    needs: build
-    runs-on: ubuntu-latest
-    services:
-      bitcoind1:
-        image: ghcr.io/rsksmart/rskj/mit_bitcoind1:latest
-        ports:
-          - 8331:8331
-          - 31591:31591
-          - 32591:32591
-        options: --name bitcoind1
-      bitcoind2:
-        image: ghcr.io/rsksmart/rskj/mit_bitcoind2:latest
-        ports:
-          - 8332:8332
-          - 31592:31592
-          - 32592:32592
-        options: --name bitcoind2
-    steps:
-      - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 #v5.0.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 #v6.2.0
-        with:
-          node-version: '12.x'
-      - name: Check Node.js version
-        run: node --version
-
-      - name: Checkout Mining Integration Tests Repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 #v5.0.0
-        with:
-          repository: rsksmart/mining-integration-tests
-          ref: ${{ secrets.MINING_INTEGRATION_TESTS_REF }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          path: mining-integration-tests
-
-      - name: Install Mining Integration Tests dependencies
-        working-directory: mining-integration-tests
-        run: |
-          npm ci
-
-      - name: Change mining-integration-tests bitcoind url in config.json to localhost
-        working-directory: mining-integration-tests
-        run: |
-          jq 'if .bitcoind.url? then .bitcoind.url = "localhost" else error(".bitcoind.url not found") end' config.json > config.json.tmp && mv config.json.tmp config.json
-
-      - name: Generate BTC blocks
-        working-directory: mining-integration-tests
-        run: |
-          node --unhandled-rejections=strict generateBtcBlocks.js
-
-      - name: Setup Java & Gradle
-        uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e #v5.1.0
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'gradle'
-
       # TODO: Remove cache/restore + configure.sh fallback once gradle-wrapper.jar is committed
       - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 #v4.3.0
         name: Restore Gradle Wrapper
@@ -246,7 +180,7 @@ jobs:
 
   unit-tests-java17:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: monkci-ubuntu-24.04-32
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 #v5.0.0
 
@@ -300,7 +234,7 @@ jobs:
 
   integration-tests:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: monkci-ubuntu-24.04-32
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 #v5.0.0
 

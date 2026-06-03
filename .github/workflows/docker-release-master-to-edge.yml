@@ -1,9 +1,7 @@
 name: Docker image release for edge and master tags from master
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
 
 # Declare default permissions as read only.
 permissions: read-all

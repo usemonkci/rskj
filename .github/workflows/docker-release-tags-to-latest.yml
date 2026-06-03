@@ -1,9 +1,7 @@
 name: Docker image release for latest tags from git tag
 
 on:
-  push:
-    tags:
-      - '*'
+  workflow_dispatch:
 
 # Declare default permissions as read only.
 permissions: read-all

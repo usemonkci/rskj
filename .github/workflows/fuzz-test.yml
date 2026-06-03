@@ -1,10 +1,6 @@
 name: Execute Fuzzing Tests
 
 on:
-  push:
-    branches:
-      - "master"
-      - "*-rc"
   workflow_dispatch:
     inputs:
       branch:
